@@ -9,13 +9,18 @@ function waitForGlobals() {
                 const sessionInput = document.querySelector('input[name="sessionid"]');
                 if (sessionInput) sessionId = sessionInput.value;
             }
+            console.log('Found sessionId:', sessionId);
 
-            // Fallback: Try to construct profileUrl from location
+            // Fallback: Extract only USERNAME or STEAMID from window.location.href, removing any trailing # or query
             if (!profileUrl) {
-                // Example: https://steamcommunity.com/id/USERNAME/ or /profiles/STEAMID/
-                const match = location.pathname.match(/^\/(id|profiles)\/[^\/]+\/$/);
-                if (match) profileUrl = location.origin + location.pathname;
+                const cleanHref = window.location.href.split(/[?#]/)[0];
+                const match = cleanHref.match(/\/(id|profiles)\/([^\/]+)\/?/);
+                if (match) {
+                    // Only assign USERNAME or STEAMID
+                    profileUrl = match[2];
+                }
             }
+            console.log('Found profileUrl:', profileUrl);
 
             if (profileUrl && sessionId) {
                 resolve({ profileUrl, sessionId });
@@ -87,10 +92,7 @@ export async function ShowModal() {
     // Handle form submit
     overlay.querySelector('#nickname-form').onsubmit = async (e) => {
         e.preventDefault();
-        const nickname = overlay.querySelector('#nickname-input').value.trim();
-        if (!nickname) return;
-
-        // Wait for global variables to be available
+        const nickname = overlay.querySelector('#nickname-input').value.trim(); // <-- Add this line
         const { profileUrl, sessionId } = await waitForGlobals();
 
         if (!profileUrl || !sessionId) {
@@ -98,8 +100,19 @@ export async function ShowModal() {
             return;
         }
 
+        // Reconstruct the full profile URL
+        let fullProfileUrl;
+        if (window.location.href.includes('/id/')) {
+            fullProfileUrl = `https://steamcommunity.com/id/${profileUrl}/ajaxsetnickname/`;
+        } else if (window.location.href.includes('/profiles/')) {
+            fullProfileUrl = `https://steamcommunity.com/profiles/${profileUrl}/ajaxsetnickname/`;
+        } else {
+            showAlert('Could not determine profile URL type.');
+            return;
+        }
+
         try {
-            const response = await fetch(profileUrl + 'ajaxsetnickname/', {
+            const response = await fetch(fullProfileUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
@@ -136,7 +149,7 @@ export async function ShowModal() {
                 if (target) target.style.display = 'none';
             }
         } catch (err) {
-            showAlert('Error processing your request. Please try again.');
+            console.error('Error processing your request. Please try again.: ' + err.message);
         }
 
         overlay.remove();
