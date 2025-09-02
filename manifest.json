@@ -13,14 +13,20 @@
         "48": "/images/steam.png",
         "128": "/images/steam.png"
     },
-    
+    "web_accessible_resources": [
+      {
+        "resources": ["scripts/nickname.js", "scripts/modal.js", "styles/styles.css"],
+        "matches": ["https://*.steamcommunity.com/*"]
+      }
+    ],
     "content_scripts": [
         {
           "css": [
               "styles/styles.css"
           ],
           "js": [
-              "scripts/nickname.js"
+              "scripts/nickname.js",
+              "scripts/modal.js"
           ],
           "matches": [
           "https://steamcommunity.com/id/*",
