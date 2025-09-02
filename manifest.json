@@ -1,0 +1,31 @@
+{
+    "manifest_version": 3,
+    "name": "Steam Friends Enhanced",
+    "description": "Add Visual Enhancements to Steam Profiles to allow for Non Friend Nicknames and Alt Account Displays",
+    "version": "1.0",
+    "action": {
+      "default_popup": "index.html",
+      "default_icon": "/images/steam.png"
+    },
+    "icons": {
+        "16": "/images/steam.png",
+        "32": "/images/steam.png",
+        "48": "/images/steam.png",
+        "128": "/images/steam.png"
+    },
+    
+    "content_scripts": [
+        {
+          "css": [
+              "styles/styles.css"
+          ],
+          "js": [
+              "scripts/nickname.js"
+          ],
+          "matches": [
+          "https://steamcommunity.com/id/*",
+          "http://steamcommunity.com/id/*"
+          ]
+        }
+    ]
+  }
